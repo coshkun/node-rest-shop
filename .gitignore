@@ -1,3 +1,6 @@
+# MacOS Related Artifacts
+.DS_Store
+
 # Logs
 logs
 *.log
