@@ -11,9 +11,16 @@ router.get('/', (req, res, next) => {
 
 //MARK: - Create Single
 router.post('/', (req, res, next) => {
+    const product = {
+        name: req.body.name,
+        price: req.body.price
+    }
+
     res.status(201).json({
         err: 0,
-        message: "No products created yet."
+        message: "No products created yet.",
+        request: product,
+        response: {}
     })
 })
 
