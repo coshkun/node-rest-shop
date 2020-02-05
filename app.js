@@ -18,6 +18,7 @@ mongoose.connect(uri, {
     useNewUrlParser: true, // suppress warnings
     useUnifiedTopology: true //to suppress warnings
 })
+mongoose.Promise = global.Promise //to suppress DeprecationWarnings
 
 //Disable CORS: Cros-Origin-Resource-Sharing Errors
 //by adding missing header fields, this allows 

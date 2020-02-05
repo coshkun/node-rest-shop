@@ -1,5 +1,7 @@
 const express = require('express')
 const router = express.Router()
+const baseUrl = process.env.BASE_URL || 'http://localhost'
+const PORT = process.env.PORT || '3000'
 
 const mongoose = require('mongoose')
 const Product = require('../models/product')
@@ -8,14 +10,25 @@ const Product = require('../models/product')
 router.get('/', (req, res, next) => {
 
     Product.find()
+        .select('_id name price')
         .exec()
-        .then(doc => {
-            console.log(doc)
-            if (doc.length >= 0) {
+        .then(docs => {
+            console.log(docs)
+            if (docs.length >= 0) {
                 res.status(200).json({
                     err: 0,
                     message: "success",
-                    response: doc
+                    response: docs.map(doc => {
+                        return {
+                            id: doc._id,
+                            name: doc.name,
+                            price: doc.price,
+                            request: {
+                                type: 'GET',
+                                url: `${baseUrl}:${PORT}/products/` + doc._id
+                            }
+                        }
+                    })
                 })
             } else {
                 // no obj in DB
@@ -51,15 +64,21 @@ router.post('/', (req, res, next) => {
         res.status(201).json({
             err: 0,
             message: "Product created.",
-            request: req.body,
-            response: product
+            response: {
+                id: result._id,
+                name: result.name,
+                price: result.price,
+                request: {
+                    type: 'GET',
+                    url: `${baseUrl}:${PORT}/products/` + result._id
+                }
+            }
         })
     }).catch(err => {
         console.log(err)
         res.status(500).json({
             err: 1,
             message: "fails",
-            request: req.body,
             response: err
         })
     })
@@ -72,6 +91,7 @@ router.get('/:productId',(req, res, next) => {
     const id = req.params.productId
 
     Product.findById(id)
+        .select('_id name price')
         .exec()
         .then(doc => {
             console.log(doc)
@@ -79,7 +99,11 @@ router.get('/:productId',(req, res, next) => {
                 res.status(200).json({
                     err: 0,
                     message: "success",
-                    response: doc
+                    response: doc,
+                    request: {
+                        type: 'GET',
+                        url: `${baseUrl}:${PORT}/products/`
+                    }
                 })
             } else {
                 res.status(404).json({
@@ -117,8 +141,11 @@ router.patch('/:productId',(req, res, next) => {
             res.status(200).json({
                 err: 0,
                 message: "Updated product by id: " + id,
-                request: req.body,
-                response: result
+                response: result,
+                request: {
+                    type: 'GET',
+                    url: `${baseUrl}:${PORT}/products/` + id
+                }
             })
         })
         .catch(err => {
@@ -126,7 +153,6 @@ router.patch('/:productId',(req, res, next) => {
             res.status(500).json({
                 err: 1,
                 message: "Unable to updated product for id: " + id,
-                request: req.body,
                 response: err
             })
         });
@@ -142,7 +168,12 @@ router.delete('/:productId',(req, res, next) => {
             res.status(200).json({
                 err: 0,
                 message: "Deleted product id: " + id,
-                response: result
+                response: result,
+                request: {
+                    type: 'POST',
+                    url: `${baseUrl}:${PORT}/products/`,
+                    body: { name: 'String', price: 'Number' }
+                }
             })
         })
         .catch(err => {
