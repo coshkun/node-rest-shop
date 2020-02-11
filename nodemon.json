@@ -1,7 +1,7 @@
 {
     "env": {
-        "MONGO_ATLAS_USR":"node-shop",
-        "MONGO_ATLAS_PWD":"node-shop",
+        "MONGO_ATLAS_USR":"dbmaster",
+        "MONGO_ATLAS_PWD":"masterkey9",
         "PORT" : "3000"
     }
 }
