@@ -12,6 +12,7 @@ router.get('/', (req, res, next) => {
 
     Order.find()
     .select('_id product quantity')
+    .populate('product', '_id name price')
     .exec()
     .then(docs => {
         console.log(docs)
@@ -20,15 +21,32 @@ router.get('/', (req, res, next) => {
             message: "success",
             count: docs.length,
             response: docs.map(doc => {
-                return {
-                    id: doc._id,
-                    quantity: doc.quantity,
-                    productId: doc.product,
-                    request: {
-                        type: 'GET',
-                        url: `${baseUrl}:${PORT}/orders/${doc._id}`
+                if (doc.product) { //product populated
+                    return {
+                        id: doc._id,
+                        quantity: doc.quantity,
+                        product: {
+                            id: doc.product._id,
+                            name: doc.product.name,
+                            price: doc.product.price
+                        },
+                        request: {
+                            type: 'GET',
+                            url: `${baseUrl}:${PORT}/orders/${doc._id}`
+                        }
+                    }
+                } else {
+                    return { //product is null
+                        id: doc._id,
+                        quantity: doc.quantity,
+                        product: {},
+                        request: {
+                            type: 'GET',
+                            url: `${baseUrl}:${PORT}/orders/${doc._id}`
+                        }
                     }
                 }
+                
             })
         })
     })
@@ -93,6 +111,7 @@ router.post('/', (req, res, next) => {
 //MARK: - Get Detail By ID
 router.get('/:orderId',(req, res, next) => {
     Order.findById(req.params.orderId)
+    .populate('product', '_id name price')
     .exec()
     .then(order => {
         console.log(order)
@@ -102,7 +121,7 @@ router.get('/:orderId',(req, res, next) => {
                 message: "Order not found"
             })
         }
-        
+
         res.status(200).json({
             err: 0,
             message: "success",
