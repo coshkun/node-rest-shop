@@ -6,11 +6,38 @@ const PORT = process.env.PORT || '3000'
 const mongoose = require('mongoose')
 const Product = require('../models/product')
 
+// multipart-form-data body parser module
+const multer = require('multer'); 
+//const upload = multer({dest: 'uploads/'})
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads/')
+    },
+    filename: (req, file, cb) => {
+        cb(null, new Date().toISOString() + file.originalname)
+    }
+})
+const fileFilter = function(req, file, cb) {
+    if (file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true) //accept
+    } else {
+        cb(new Error('Unsupported file format with: ' +  file.mimetype), false) //reject
+    }
+}
+const upload = multer({
+    storage: storage, 
+    limits: {
+        fileSize: 1024 * 1024 * 5 //means 5 megs
+    },
+    fileFilter: fileFilter
+})
+
+
 //MARK: - List Products
 router.get('/', (req, res, next) => {
 
     Product.find()
-        .select('_id name price')
+        .select('_id name price productImage')
         .exec()
         .then(docs => {
             console.log(docs)
@@ -23,6 +50,7 @@ router.get('/', (req, res, next) => {
                             id: doc._id,
                             name: doc.name,
                             price: doc.price,
+                            productImage: doc.productImage,
                             request: {
                                 type: 'GET',
                                 url: `${baseUrl}:${PORT}/products/` + doc._id
@@ -50,12 +78,15 @@ router.get('/', (req, res, next) => {
 })
 
 //MARK: - Create Single
-router.post('/', (req, res, next) => {
+router.post('/', upload.single('productImage'), (req, res, next) => {
+    
+    console.log(req.file)
 
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price
+        price: req.body.price,
+        productImage: `${baseUrl}:${PORT}/` + req.file.path // <- 'uploads/filename.jpg'
     })
 
     product.save()
@@ -91,7 +122,7 @@ router.get('/:productId',(req, res, next) => {
     const id = req.params.productId
 
     Product.findById(id)
-        .select('_id name price')
+        .select('_id name price productImage')
         .exec()
         .then(doc => {
             console.log(doc)
@@ -168,7 +199,7 @@ router.delete('/:productId',(req, res, next) => {
             res.status(200).json({
                 err: 0,
                 message: "Deleted product id: " + id,
-                response: result,
+                response: {},
                 request: {
                     type: 'POST',
                     url: `${baseUrl}:${PORT}/products/`,

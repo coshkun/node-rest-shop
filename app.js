@@ -8,6 +8,9 @@ const bodyparser = require('body-parser');
 app.use(bodyparser.urlencoded({ extended: false }))
 app.use(bodyparser.json())
 
+//Create Static Access
+app.use('/uploads', express.static('uploads'))
+
 //Create Database Connection
 const mongoUSER = process.env.MONGO_ATLAS_USR || 'node-shop' //default username for your sandbox env
 const mongoPASS = process.env.MONGO_ATLAS_PWD || 'node-shop' //default password for your sandbox env
