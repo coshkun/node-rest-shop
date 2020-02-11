@@ -41,9 +41,11 @@ app.use((req, res, next) => {
 })
 
 //Create Routers
+const usertRoutes = require('./api/routes/users')
 const productRoutes = require('./api/routes/products')
 const ordersRoutes = require('./api/routes/orders')
 
+app.use('/users', usertRoutes)
 app.use('/products', productRoutes)
 app.use('/orders', ordersRoutes)
 
