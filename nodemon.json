@@ -2,6 +2,7 @@
     "env": {
         "MONGO_ATLAS_USR":"node-rest-shop",
         "MONGO_ATLAS_PWD":"node-rest-shop",
-        "PORT" : "3000"
+        "PORT" : "3000",
+        "JWT_PRIVATE_KEY":"mysupersecretveryhiddenkeygoeshere"
     }
 }
