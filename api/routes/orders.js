@@ -7,8 +7,10 @@ const mongoose = require('mongoose')
 const Order = require('../models/order')
 const Product = require('../models/product')
 
+const checkAuth = require('../middlewares/check-auth')
+
 //MARK: - List Products
-router.get('/', (req, res, next) => {
+router.get('/', checkAuth, (req, res, next) => {
 
     Order.find()
     .select('_id product quantity')
@@ -61,7 +63,7 @@ router.get('/', (req, res, next) => {
 })
 
 //MARK: - Create Single
-router.post('/', (req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
     // Check if we have the product in DB
     Product.findById(req.body.productId)
     .then(product => {
@@ -109,7 +111,7 @@ router.post('/', (req, res, next) => {
 })
 
 //MARK: - Get Detail By ID
-router.get('/:orderId',(req, res, next) => {
+router.get('/:orderId', checkAuth, (req, res, next) => {
     Order.findById(req.params.orderId)
     .populate('product', '_id name price')
     .exec()
@@ -143,16 +145,44 @@ router.get('/:orderId',(req, res, next) => {
 })
 
 //MARK: - Update Single By ID
-router.patch('/:orderId',(req, res, next) => {
+router.patch('/:orderId', checkAuth, (req, res, next) => {
+
     const id = req.params.orderId
-    res.status(200).json({
-        err: 0,
-        message: "Updated order id: " + id
-    })
+    // Order.update({ _id: id }, { $set: { product: req.body.productId, quantity: req.body.quantity } })
+
+    //Make them optional
+    const upOptions = {}
+    for (const ops of req.body) {
+        if (ops.propName === 'orderId' || ops.propName === 'product') { continue } // declineds
+        if (ops.propName === 'productId') { upOptions['product'] = ops.value; continue } // alloweds
+        upOptions[ops.propName] = ops.value
+    }
+    Order.update({ _id: id }, { $set: upOptions })
+        .exec()
+        .then(result => {
+            console.log(result)
+            res.status(200).json({
+                err: 0,
+                message: "Updated order by id: " + id,
+                response: result,
+                request: {
+                    type: 'GET',
+                    url: `${baseUrl}:${PORT}/orders/` + id
+                }
+            })
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({
+                err: 1,
+                message: "Unable to updated order for id: " + id,
+                response: err
+            })
+        });
 })
 
 //MARK: - Delete Single By ID
-router.delete('/:orderId',(req, res, next) => {
+router.delete('/:orderId', checkAuth, (req, res, next) => {
     Order.remove({ _id: req.params.orderId })
     .exec()
     .then(result => {

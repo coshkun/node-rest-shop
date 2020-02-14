@@ -7,6 +7,7 @@ const PRIVATE_KEY = process.env.JWT_PRIVATE_KEY || 'mysupersecretveryhiddenkeygo
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const checkAuth = require('../middlewares/check-auth')
 
 const User = require('../models/user')
 
@@ -97,7 +98,7 @@ router.post('/login', (req, res, next) => {
                 PRIVATE_KEY, 
                 {
                     // OPTIONS
-                    expiresIn: 180  //seconds, or '1h' or '7d'
+                    expiresIn: 1800  //seconds, or '1h' or '7d'
                 })
 
                 return res.status(200).json({

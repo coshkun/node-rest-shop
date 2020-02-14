@@ -6,6 +6,9 @@ const PORT = process.env.PORT || '3000'
 const mongoose = require('mongoose')
 const Product = require('../models/product')
 
+const checkAuth = require('../middlewares/check-auth')
+
+
 // multipart-form-data body parser module
 const multer = require('multer'); 
 //const upload = multer({dest: 'uploads/'})
@@ -78,7 +81,7 @@ router.get('/', (req, res, next) => {
 })
 
 //MARK: - Create Single
-router.post('/', upload.single('productImage'), (req, res, next) => {
+router.post('/', checkAuth, upload.single('productImage'), (req, res, next) => {
     
     console.log(req.file)
 
@@ -155,7 +158,7 @@ router.get('/:productId',(req, res, next) => {
 })
 
 //MARK: - Update Single By ID
-router.patch('/:productId',(req, res, next) => {
+router.patch('/:productId', checkAuth, (req, res, next) => {
     const id = req.params.productId
     // Product.update({ _id: id }, { $set: { name: req.body.newName, price: req.body.newPrice } })
 
@@ -190,7 +193,7 @@ router.patch('/:productId',(req, res, next) => {
 })
 
 //MARK: - Delete Single By ID
-router.delete('/:productId',(req, res, next) => {
+router.delete('/:productId', checkAuth, (req, res, next) => {
     const id = req.params.productId
 
     Product.remove({ _id: id })
